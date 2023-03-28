@@ -5,6 +5,7 @@
 package etu2022.framework.servlet;
 
 
+import etu2022.framework.Mapping;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -20,7 +21,14 @@ import javax.servlet.http.HttpServletResponse;
  */
 //@WebServlet(name = "FrontServlet", urlPatterns = {"/"})
 public class FrontServlet extends HttpServlet {
-      
+        HashMap<String,Mapping> mapping;
+    
+    public void setMapping(HashMap<String,Mapping> map){
+        this.mapping = map;
+    }
+    public HashMap<String,Mapping> getMapping(){
+        return this.mapping;
+    }
     
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
