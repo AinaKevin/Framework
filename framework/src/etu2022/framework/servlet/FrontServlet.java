@@ -6,8 +6,13 @@ package etu2022.framework.servlet;
 
 
 import etu2022.framework.Mapping;
+import static etu2022.framework.Mapping.getMethodsHashMapFromPackage;
+import etu2022.framework.Url;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -29,6 +34,19 @@ public class FrontServlet extends HttpServlet {
     public HashMap<String,Mapping> getMapping(){
         return this.mapping;
     }
+
+    @Override
+    public void init() throws ServletException {
+        String packageDirectory = "etu2022.framework.Mapping";
+        String ObjectPackage = " ";
+        try {
+            HashMap v =Mapping.getMethodsHashMapFromPackage(packageDirectory, ObjectPackage);
+        } catch (Exception e) {
+            System.out.println("HashMapnotfound");
+        }
+    }
+    
+    
     
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -39,6 +57,7 @@ public class FrontServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
