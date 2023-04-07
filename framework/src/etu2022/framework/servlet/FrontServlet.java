@@ -37,8 +37,8 @@ public class FrontServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        String packageDirectory = "etu2022.framework.Mapping";
-        String ObjectPackage = " ";
+        String packageDirectory = "/home/kevin/NetBeansProjects/framework/src/java/etu2022/framework/test/";
+        String ObjectPackage = "/home/kevin/NetBeansProjects/framework/src/java/etu2022/framework/test/";
         try {
             HashMap v =Mapping.getMethodsHashMapFromPackage(packageDirectory, ObjectPackage);
         } catch (Exception e) {
