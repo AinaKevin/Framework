@@ -55,7 +55,7 @@ public class Mapping {
         }
         return listefile;
     }
-
+///home/kevin/Documents/GitHub/Framework/framework/src/etu2022/framework/Mapping.java
 
 public static HashMap<String, Mapping> getMethodsHashMapFromPackage(String packageDirectory,String ObjectPackage) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         HashMap<String,Mapping> mapping=new HashMap<>();
