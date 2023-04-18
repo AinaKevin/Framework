@@ -63,7 +63,12 @@ public static HashMap<String, Mapping> getMethodsHashMapFromPackage(String packa
         String[] classes=getClassList(packageDirectory);
         for (int i = 0; i < classes.length; i++) {
             System.out.println("name: "+classes[i]);
-            Class<?> tempClass=Class.forName(ObjectPackage+classes[i]);
+            Class<?> tempClass=null;
+            try{
+                tempClass = Class.forName(ObjectPackage+classes[i]);
+            }catch(ClassNotFoundException e){
+                e.getMessage();
+            }
             Object obj=tempClass.newInstance();
             Method [] methods=obj.getClass().getDeclaredMethods();
             for (int j = 0; j < methods.length; j++) {
