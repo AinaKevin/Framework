@@ -7,13 +7,17 @@ package etu2022.framework.servlet;
 
 import etu2022.framework.Mapping;
 import static etu2022.framework.Mapping.getMethodsHashMapFromPackage;
+import etu2022.framework.ModelView;
 import etu2022.framework.Url;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,17 +41,36 @@ public class FrontServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        String packageDirectory = "/home/kevin/NetBeansProjects/framework/src/java/etu2022/framework/test/";
-        String ObjectPackage = "/home/kevin/NetBeansProjects/framework/src/java/etu2022/framework/test/";
-        try {
-            HashMap v =Mapping.getMethodsHashMapFromPackage(packageDirectory, ObjectPackage);
+        String packageDirectory = "/home/kevin/Documents/GitHub/Framework/Testframework/src/java/etu2022/framework/test";
+        String ObjectPackage = "etu2022.framework.test.";
+        try { 
+            HashMap<String, Mapping> v = new HashMap();
+            v =Mapping.getMethodsHashMapFromPackage(packageDirectory, ObjectPackage);
+            this.setMapping(v);
         } catch (Exception e) {
             System.out.println("HashMapnotfound");
         }
     }
     
-    
-    
+    public ModelView comparer(String variable,String pack,PrintWriter out) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException{
+        ModelView rep =null;
+        out.print("1");
+        if(getMapping().get(variable) instanceof Mapping){
+            out.print("2");
+            Mapping v = getMapping().get(variable);
+            out.print("3");
+            Class classname = Class.forName(pack + v.getClassName());
+            out.print("4");
+            Object test  = classname.newInstance();
+            out.print("5");
+            Method method = test.getClass().getMethod(v.getMethode());
+            out.print("6");
+            Object page = method.invoke(test);
+            out.print("7");
+            rep = (ModelView) page;
+        }
+        return rep;
+    }
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -63,6 +86,7 @@ public class FrontServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try ( PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
+            String ObjectPackage = "etu2022.framework.test.";
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -70,7 +94,21 @@ public class FrontServlet extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet FrontServlet at " + request.getContextPath() + "</h1>");
-            out.println(request.getServletPath());
+            String url = request.getServletPath().split("/")[1];
+//            out.print(this.getMapping().get(url));
+            try {
+                out.println("hu");
+                out.print("url: "+comparer(url,ObjectPackage,out));
+                if(comparer(url,ObjectPackage,out)!=null){
+                    ModelView vue = comparer(url,ObjectPackage,out);
+                    out.println(vue.getUrl());
+                    String page = vue.getUrl();
+                    RequestDispatcher dis = request.getRequestDispatcher(page);
+                    dis.forward(request,response);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             out.println("</body>");
             out.println("</html>");
         }

@@ -4,6 +4,7 @@
  */
 package etu2022.framework.test;
 
+import etu2022.framework.ModelView;
 import etu2022.framework.Url;
 
 /**
@@ -11,8 +12,9 @@ import etu2022.framework.Url;
  * @author kevin
  */
 public class Test {
-    @Url(url="/huhu")
-    public void hehe(){
-        System.out.println("etu2022.framework.test.Test.hehe()");
+    @Url(url="huhu")
+    public ModelView hehe(){
+        return new ModelView("test.jsp");
+//        System.out.println("etu2022.framework.test.Test.hehe()");
     }
 }
