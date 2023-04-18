@@ -36,5 +36,7 @@ public class ModelView {
         this.setData(data);
     }
     
-   
+   public void addItem(String key,Object ob){
+      this.getData().put(key, ob);
+   }
 }

@@ -17,6 +17,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import javax.servlet.GenericServlet;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -101,6 +103,13 @@ public class FrontServlet extends HttpServlet {
                 out.print("url: "+comparer(url,ObjectPackage,out));
                 if(comparer(url,ObjectPackage,out)!=null){
                     ModelView vue = comparer(url,ObjectPackage,out);
+                    Set jeddy = vue.getData(). keySet();
+                    for (Map.Entry entry : vue.getData().entrySet()) {
+                        request.setAttribute((String) entry.getKey(),entry.getValue());
+                        Object key = entry.getKey();
+                        Object val = entry.getValue();
+                 
+                    }
                     out.println(vue.getUrl());
                     String page = vue.getUrl();
                     RequestDispatcher dis = request.getRequestDispatcher(page);
