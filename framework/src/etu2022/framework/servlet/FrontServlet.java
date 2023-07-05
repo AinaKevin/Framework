@@ -4,7 +4,6 @@
  */
 package etu2022.framework.servlet;
 
-
 import etu2022.framework.Mapping;
 import static etu2022.framework.Mapping.getMethodsHashMapFromPackage;
 import etu2022.framework.ModelView;
@@ -32,12 +31,14 @@ import javax.servlet.http.HttpServletResponse;
  */
 //@WebServlet(name = "FrontServlet", urlPatterns = {"/"})
 public class FrontServlet extends HttpServlet {
-        HashMap<String,Mapping> mapping;
-    
-    public void setMapping(HashMap<String,Mapping> map){
+
+    HashMap<String, Mapping> mapping;
+
+    public void setMapping(HashMap<String, Mapping> map) {
         this.mapping = map;
     }
-    public HashMap<String,Mapping> getMapping(){
+
+    public HashMap<String, Mapping> getMapping() {
         return this.mapping;
     }
 
@@ -45,25 +46,26 @@ public class FrontServlet extends HttpServlet {
     public void init() throws ServletException {
         String packageDirectory = "/home/kevin/Documents/GitHub/Framework/Testframework/src/java/etu2022/framework/test";
         String ObjectPackage = "etu2022.framework.test.";
-        try { 
+        mapping = new HashMap<>();
+        try {
             HashMap<String, Mapping> v = new HashMap();
-            v =Mapping.getMethodsHashMapFromPackage(packageDirectory, ObjectPackage);
+            v = Mapping.getMethodsHashMapFromPackage(packageDirectory, ObjectPackage);
             this.setMapping(v);
         } catch (Exception e) {
-            System.out.println("HashMapnotfound");
+            e.printStackTrace();
         }
     }
-    
-    public ModelView comparer(String variable,String pack,PrintWriter out) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException{
-        ModelView rep =null;
+
+    public ModelView comparer(String variable, String pack, PrintWriter out) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+        ModelView rep = null;
         out.print("1");
-        if(getMapping().get(variable) instanceof Mapping){
+        if (getMapping().get(variable) instanceof Mapping) {
             out.print("2");
             Mapping v = getMapping().get(variable);
             out.print("3");
             Class classname = Class.forName(pack + v.getClassName());
             out.print("4");
-            Object test  = classname.newInstance();
+            Object test = classname.newInstance();
             out.print("5");
             Method method = test.getClass().getMethod(v.getMethode());
             out.print("6");
@@ -71,8 +73,10 @@ public class FrontServlet extends HttpServlet {
             out.print("7");
             rep = (ModelView) page;
         }
+
         return rep;
     }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -82,7 +86,6 @@ public class FrontServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -92,7 +95,7 @@ public class FrontServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet FrontServlet</title>");            
+            out.println("<title>Servlet FrontServlet</title>");
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet FrontServlet at " + request.getContextPath() + "</h1>");
@@ -100,21 +103,18 @@ public class FrontServlet extends HttpServlet {
 //            out.print(this.getMapping().get(url));
             try {
                 out.println("hu");
-                out.print("url: "+comparer(url,ObjectPackage,out));
-                if(comparer(url,ObjectPackage,out)!=null){
-                    ModelView vue = comparer(url,ObjectPackage,out);
-                    Set jeddy = vue.getData(). keySet();
-                    for (Map.Entry entry : vue.getData().entrySet()) {
-                        request.setAttribute((String) entry.getKey(),entry.getValue());
-                        Object key = entry.getKey();
-                        Object val = entry.getValue();
-                 
-                    }
+                out.print("url: " + comparer(url, ObjectPackage, out));
+                if (comparer(url, ObjectPackage, out) != null) {
+                    ModelView vue = comparer(url, ObjectPackage, out);
                     out.println(vue.getUrl());
                     String page = vue.getUrl();
+                    for (Map.Entry<String, Object> entry : vue.getData().entrySet()) {
+                        request.setAttribute(entry.getKey(), entry.getValue());
+                    }
                     RequestDispatcher dis = request.getRequestDispatcher(page);
-                    dis.forward(request,response);
+                    dis.forward(request, response);
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -123,7 +123,7 @@ public class FrontServlet extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *

@@ -29,7 +29,7 @@ public class Test {
     public String getMarque(){
         return this.marque;
     }
-    
+    public Test(){}
     public Test(String marque,String voiture){
         this.setMarque(marque);
         this.setVoiture(voiture);
@@ -46,10 +46,10 @@ public class Test {
     @Url(url="huhu")
     public ModelView hehe(){
         ModelView m = new ModelView("test.jsp");
-        m.addItem("jean", "jeannnnnnnnne");
-        
+         Test[] tests={new Test("jean","jean"),new Test("nissan","gtr")};
 //        return new ModelView("test.jsp");
-//        System.out.println("etu2022.framework.test.Test.hehe()");
+//        m.addItem("listetest", tests);
+          m.addItem("listetest", tests);
         return m;
     }
    
