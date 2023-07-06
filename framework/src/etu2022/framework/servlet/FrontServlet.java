@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -28,6 +29,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Date;
+import java.util.Collection;
+import java.util.Collections;
 import javax.servlet.ServletConfig;
 
 /**
@@ -183,6 +186,43 @@ public class FrontServlet extends HttpServlet {
             int x = 0;
         }
     }
+    
+    public Object[] findMethodAndParams(HttpServletRequest req, Object obj) throws Exception {
+        Method[] methodsObject = obj.getClass().getDeclaredMethods();
+        String urlPath = req.getServletPath().split("/")[1];
+        for (Method method : methodsObject) {
+            // cherche les les fonctions que ceux contenues dans Mapping
+            if (mapping.get(urlPath).getMethode().equals(method.getName())) {
+                Parameter[] params = method.getParameters();
+                if (params.length == 0 && Collections.list(req.getParameterNames()).isEmpty()) {
+                    Object[] methodOnly = {method};
+                    return methodOnly;
+                }
+                Object[] methodAndParam = new Object[2];
+                Object[] paramValues = new Object[method.getParameterCount()];
+                methodAndParam[0] = method;
+                for (int i = 0; i < method.getParameterCount(); i++) {
+                    Parameter p = method.getParameters()[i];
+                    if (p.getType().equals(int.class)) {
+                        paramValues[i] = Integer.valueOf(req.getParameter(p.getName()));
+                    } else if (p.getType().equals(double.class)) {
+                        paramValues[i] = Double.valueOf(req.getParameter(p.getName()));
+                    } else if (p.getType().equals(String.class)) {
+                        paramValues[i] = req.getParameter(p.getName());
+                    } else if (p.getType().equals(Date.class)){
+                        paramValues[i] = Date.valueOf(req.getParameter(p.getName()));
+                    }
+                }
+                methodAndParam[1] = paramValues;
+                return methodAndParam;
+            }
+        }
+        throw new Exception("Aucune fonction n'est annote");
+    }
+    
+    public void sprint8() {
+        
+    }
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -209,11 +249,18 @@ public class FrontServlet extends HttpServlet {
                 //appeler une fonction qui set les attributs d' ObjectInstance
                 useSet(objectInstance, req);
                 // rechercher la fonction inclut dans Mapping
-                methodCalled = objectInstance.getClass().getDeclaredMethod(mapUsed.getMethode());
-
+                Object[] methodAndValues = findMethodAndParams(req, objectInstance);
+                methodCalled = (Method) methodAndValues[0];
+                ModelView mv = null;
                 // invoker la fonction une fois trouvee
                 // pas d'argument
-                ModelView mv = (ModelView) methodCalled.invoke(objectInstance);
+                if (methodAndValues.length == 1) {
+                    mv = (ModelView) methodCalled.invoke(objectInstance);
+                } // avec arguments
+                else {
+                    Object[] values = (Object[]) methodAndValues[1];
+                    mv = (ModelView) methodCalled.invoke(objectInstance, values);
+                }
                 //si mvn'as pas de data
                 if (mv.getData() != null) {
                     fillDataOfModeliew(mv.getData(), req);

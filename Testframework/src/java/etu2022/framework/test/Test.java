@@ -59,5 +59,12 @@ public class Test {
           m.addItem("listetest", tests);
         return m;
     }
+    
+    @Url(url="huhu")
+    public ModelView sprint8(int id){
+        ModelView mv =  new ModelView("sprint8.jsp");
+        System.out.println(id);
+        return mv;
+    }
    
 }
