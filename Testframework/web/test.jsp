@@ -5,10 +5,10 @@
 --%>
 <%@page import="etu2022.framework.test.Test"%>
 <%
-   Object obj = request.getAttribute("listetest");
-    Test[]emps = (Test[])obj;
-     out.println("tiko ndry");
-        
+    Object obj = request.getAttribute("listetest");
+    Test[] emps = (Test[]) obj;
+    out.println("tiko ndry");
+
 %>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -21,9 +21,8 @@
     <body>
         <h1>Hello World!</h1>
         <h1>Jean</h1>
-       <%
-            for (Test emp : emps) {
-                    out.println(emp.getMarque());
+        <%           for (Test emp : emps) {
+                out.println(emp.getMarque());
             }
         %>
     </body>

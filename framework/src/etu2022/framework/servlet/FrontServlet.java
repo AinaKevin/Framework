@@ -12,8 +12,11 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +27,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.sql.Date;
+import javax.servlet.ServletConfig;
 
 /**
  *
@@ -31,31 +36,55 @@ import javax.servlet.http.HttpServletResponse;
  */
 //@WebServlet(name = "FrontServlet", urlPatterns = {"/"})
 public class FrontServlet extends HttpServlet {
-
+    
     HashMap<String, Mapping> mapping;
-
+    
     public void setMapping(HashMap<String, Mapping> map) {
         this.mapping = map;
     }
-
+    
     public HashMap<String, Mapping> getMapping() {
         return this.mapping;
     }
-
+    
+    public String formatFilePath(File file) {
+        String className = file.getAbsolutePath().replace(Thread.currentThread().getContextClassLoader().getResource(".").getFile(), "");
+        className = className.replace(".class", "");
+        className = className.replace("/", ".");
+        return className;
+    }
+    
+    public void fillMappingUrl(File file) throws ClassNotFoundException {
+        for (File fileUnderFile : file.listFiles()) {
+            if (fileUnderFile.isFile() && fileUnderFile.getName().contains(".class")) {
+                String className = formatFilePath(fileUnderFile);
+                Class classTemp = Class.forName(className);
+                checkUrlAnnotation(classTemp);
+            } else if (fileUnderFile.isDirectory()) {
+                fillMappingUrl(fileUnderFile);
+            }
+        }
+    }
+    
+    public void checkUrlAnnotation(Class classToChecked) {
+        for (Method method : classToChecked.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(Url.class)) {
+                String url = method.getAnnotation(Url.class).url();
+                mapping.put(url, new Mapping(classToChecked.getName(), method.getName()));
+            }
+        }
+    }
+    
     @Override
     public void init() throws ServletException {
-        String packageDirectory = "/home/kevin/Documents/GitHub/Framework/Testframework/src/java/etu2022/framework/test";
-        String ObjectPackage = "etu2022.framework.test.";
         mapping = new HashMap<>();
         try {
-            HashMap<String, Mapping> v = new HashMap();
-            v = Mapping.getMethodsHashMapFromPackage(packageDirectory, ObjectPackage);
-            this.setMapping(v);
+            fillMappingUrl(new File(Thread.currentThread().getContextClassLoader().getResource(".").getPath()));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
+    
     public ModelView comparer(String variable, String pack, PrintWriter out) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         ModelView rep = null;
         out.print("1");
@@ -73,8 +102,86 @@ public class FrontServlet extends HttpServlet {
             out.print("7");
             rep = (ModelView) page;
         }
-
+        
         return rep;
+    }
+    
+    public boolean checkfield(Object obj, HttpServletRequest req) {
+        Field[] fs = obj.getClass().getDeclaredFields();
+        for (Field f : fs) {
+            if (req.getParameter(f.getName()) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public String upperFirst(String text) {
+        return text.substring(0, 1).toUpperCase() + text.substring(1);
+    }
+    
+    public void fillDataOfModeliew(HashMap<String, Object> hm, HttpServletRequest req) {
+        for (Map.Entry<String, Object> entry : hm.entrySet()) {
+            req.setAttribute(entry.getKey(), entry.getValue());
+        }
+    }
+    
+    public void sprint6(String url, String ObjectPackage, PrintWriter out, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            out.println("hu");
+            out.print("url: " + comparer(url, ObjectPackage, out));
+            if (comparer(url, ObjectPackage, out) != null) {
+                ModelView vue = comparer(url, ObjectPackage, out);
+                out.println(vue.getUrl());
+                String page = vue.getUrl();
+                for (Map.Entry<String, Object> entry : vue.getData().entrySet()) {
+                    request.setAttribute(entry.getKey(), entry.getValue());
+                }
+                RequestDispatcher dis = request.getRequestDispatcher(page);
+                dis.forward(request, response);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void useSet(Object object, HttpServletRequest req) throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, ServletException {
+//        Enumeration<String> attributeNames = req.getParameterNames();
+        Field[] fields = object.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            String attributeName = field.getName();
+//            try {
+//                field = object.getClass().getDeclaredField(attributeName);
+//            } catch (NoSuchFieldException e) {
+//                continue;
+//            }
+            String attributeValue = req.getParameter(attributeName);
+            String methodName = "set" + upperFirst(attributeName);
+            Class fieldType = field.getType();
+            Method setMethod = object.getClass().getDeclaredMethod(methodName, fieldType);
+            if (field.getType().equals(int.class)) {
+                int attribute = Integer.parseInt(attributeValue);
+                setMethod.invoke(object, attribute);
+            }
+            if (field.getType().equals(double.class)) {
+                double attribute = Double.parseDouble(attributeValue);
+                setMethod.invoke(object, attribute);
+            }
+            if (field.getType().equals(float.class)) {
+                float attribute = Float.parseFloat(attributeValue);
+                setMethod.invoke(object, attribute);
+            }
+            if (field.getType().equals(String.class)) {
+                String attribute = attributeValue;
+                setMethod.invoke(object, attribute);
+            }
+            if (field.getType().equals(Date.class)) {
+                Date attribute = Date.valueOf(attributeValue);
+                setMethod.invoke(object, attribute);
+            }
+            int x = 0;
+        }
     }
 
     /**
@@ -86,41 +193,43 @@ public class FrontServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            String ObjectPackage = "etu2022.framework.test.";
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet FrontServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet FrontServlet at " + request.getContextPath() + "</h1>");
-            String url = request.getServletPath().split("/")[1];
-//            out.print(this.getMapping().get(url));
+    public void executeAction(HttpServletRequest req, HttpServletResponse resp) {
+        if (!req.getServletPath().equals("/")) {
+            Mapping mapUsed = null;
+            String url = req.getServletPath().split("/")[1];
+            mapUsed = mapping.get(url);
+            String objectName = mapUsed.getClassName();
+            Class classCalled = null;
+            Object objectInstance = null;
+            Method methodCalled = null;
             try {
-                out.println("hu");
-                out.print("url: " + comparer(url, ObjectPackage, out));
-                if (comparer(url, ObjectPackage, out) != null) {
-                    ModelView vue = comparer(url, ObjectPackage, out);
-                    out.println(vue.getUrl());
-                    String page = vue.getUrl();
-                    for (Map.Entry<String, Object> entry : vue.getData().entrySet()) {
-                        request.setAttribute(entry.getKey(), entry.getValue());
-                    }
-                    RequestDispatcher dis = request.getRequestDispatcher(page);
-                    dis.forward(request, response);
-                }
+                classCalled = Class.forName(objectName);
+                objectInstance = classCalled.newInstance();
 
+                //appeler une fonction qui set les attributs d' ObjectInstance
+                useSet(objectInstance, req);
+                // rechercher la fonction inclut dans Mapping
+                methodCalled = objectInstance.getClass().getDeclaredMethod(mapUsed.getMethode());
+
+                // invoker la fonction une fois trouvee
+                // pas d'argument
+                ModelView mv = (ModelView) methodCalled.invoke(objectInstance);
+                //si mvn'as pas de data
+                if (mv.getData() != null) {
+                    fillDataOfModeliew(mv.getData(), req);
+                }
+                req.getRequestDispatcher(mv.getUrl()).forward(req, resp);
+                
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            out.println("</body>");
-            out.println("</html>");
         }
+    }
+    
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        executeAction(request, response);
     }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

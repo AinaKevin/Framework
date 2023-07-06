@@ -34,6 +34,13 @@ public class Test {
         this.setMarque(marque);
         this.setVoiture(voiture);
     }
+    @Url(url="emp-save")
+    public ModelView empsave(){
+        ModelView mv = new ModelView("sauvegarde.jsp");
+        System.out.println(getMarque());
+        System.out.println(getVoiture());
+        return mv;
+    }
     public Vector<Test> vectorisation(){
         Vector<Test> vector = new Vector<>();
         Test v1 = new Test("mercedes","merc");
